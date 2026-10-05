@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+<title>Del Campo a tu Mesa Maule</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  :root{
+    --page-bg-top: var(--cream-dark);
+    --page-bg-bottom: var(--cream);
+    --card-bg: var(--white);
+    --ink2: var(--ink);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --cream: #1E2420;
+      --cream-dark: #262D27;
+      --white: #2A322C;
+      --ink: #EDE9DA;
+      --green-dark: #9CCB9F;
+      --green: #7FBE86;
+      --brown: #D7A872;
+      --page-bg-top: #171C19;
+      --page-bg-bottom: #1E2420;
+      --card-bg: #262D27;
+    }
+    .big-total .kg, .muted{ color:#A9B3A6; }
+    .bank-row{ border-bottom-color:#3A423B; }
+    .choice-btn{ border-color:#3A423B; }
+    .upload-zone{ background:#232A24; border-color:var(--green); }
+    .note-box{ background:#332B18; color:#F0D597; }
+    .ticket-sep{ border-top-color:#3A423B; }
+    .ticket-sep::before, .ticket-sep::after{ background:var(--page-bg-bottom); }
+    .testimonial{ background:#232A24; }
+  }
+  body{
+    min-height:100vh;
+    display:flex; align-items:flex-start; justify-content:center;
+    background:linear-gradient(180deg, var(--page-bg-top) 0%, var(--page-bg-bottom) 260px);
+    font-size:18px;
+  }
+  .wrap{width:100%; max-width:480px; padding:18px; padding-bottom:120px;}
+
+  .hero{
+    height:150px; margin:-18px -18px 0 -18px;
+    background:url('assets/hero-farm.jpg') center 25%/cover no-repeat;
+    border-radius:0 0 28px 28px; position:relative; overflow:hidden;
+  }
+  .hero::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(20,24,20,.05) 0%, var(--page-bg-top) 94%); }
+  .hero-caption{ position:absolute; left:16px; bottom:14px; z-index:2; color:#fff; font-weight:800; font-size:13px; text-shadow:0 2px 6px rgba(0,0,0,.5); display:flex; align-items:center; gap:6px; }
+
+  .header{text-align:center; padding:14px 0 8px;}
+  .header img{width:100px; height:100px; margin:0 auto 10px; border:3px solid var(--gold); box-shadow:var(--shadow); border-radius:50%;}
+  .header h1{font-size:20px; margin:0;}
+  .header .tag{font-size:12px; color:#8a9a8b; font-weight:800; letter-spacing:.04em; text-transform:uppercase; margin-top:2px;}
+  .progress{display:flex; justify-content:center; gap:6px; margin:14px 0 20px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:#DCD3AD;}
+  .dot.active{background:var(--green);}
+
+  .card{background:var(--card-bg);}
+
+  .screen{display:none;}
+  .screen.active{display:block; animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .ref-tag{font-size:11px; font-weight:800; color:#8a9a8b; text-align:center; margin-bottom:6px;}
+  .summary-row{display:flex; align-items:center; gap:10px; padding:8px 0;}
+  .summary-row .ic{font-size:20px; width:28px; text-align:center;}
+  .summary-row .lbl{flex:1; color:#8a9a8b; font-size:14px; font-weight:700;}
+  .summary-row .val{font-weight:900; color:var(--green-dark);}
+  .big-total{text-align:center; padding:18px 0 8px;}
+  .big-total .amount{font-size:42px; font-weight:900; color:var(--green-dark); line-height:1;}
+  .big-total .kg{font-size:16px; color:#7a8a7c; font-weight:800; margin-top:6px;}
+
+  .ticket-sep{ position:relative; height:0; border-top:2px dashed #D9D0B0; margin:16px -20px 10px; }
+  .ticket-sep::before, .ticket-sep::after{ content:''; position:absolute; top:-11px; width:22px; height:22px; border-radius:50%; background:var(--page-bg-bottom); }
+  .ticket-sep::before{ left:-11px; }
+  .ticket-sep::after{ right:-11px; }
+
+  .testimonial{
+    background:var(--cream-dark); border-radius:14px; padding:14px 16px; margin-top:14px;
+    text-align:center; font-size:13px;
+  }
+  .testimonial .quote{font-weight:700; color:var(--green-dark); margin:4px 0;}
+  .testimonial .stars{color:var(--gold); font-size:14px; letter-spacing:1px;}
+
+  /* Botones con más profundidad para esta vista de cliente */
+  .btn{ background:linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%); box-shadow:0 6px 18px rgba(63,107,70,.35); transition:box-shadow .15s ease, transform .08s ease; }
+  .btn:active{ box-shadow:0 2px 8px rgba(63,107,70,.3); transform:scale(.98); }
+  .btn-whatsapp{ background:linear-gradient(135deg, #2CE366 0%, #1EBD57 100%); box-shadow:0 6px 18px rgba(37,211,102,.4); }
+
+  .choice-btn{
+    width:100%; text-align:left;
+    display:flex; align-items:center; gap:16px;
+    padding:20px; margin-bottom:14px;
+    border-radius:18px; border:2px solid #E3DDC4; background:var(--card-bg);
+    box-shadow:0 4px 14px rgba(0,0,0,.07);
+    font-weight:800; font-size:18px; color:var(--green-dark);
+    transition:box-shadow .15s ease, transform .08s ease, border-color .15s ease;
+  }
+  .choice-btn .ic{font-size:32px;}
+  .choice-btn:active{transform:scale(.98); box-shadow:0 2px 6px rgba(0,0,0,.08);}
+  .choice-btn:hover{border-color:var(--green);}
+  .choice-btn small{display:block; font-weight:600; font-size:13px; color:#7a8a7c; margin-top:2px;}
+
+  .chip-row{display:flex; gap:10px; margin:14px 0; flex-wrap:wrap;}
+  .chip{
+    flex:1; min-width:100px; text-align:center;
+    padding:16px 10px; border-radius:14px; border:2px solid #E3DDC4; background:var(--card-bg);
+    font-weight:800; font-size:14px; color:var(--green-dark); cursor:pointer;
+    transition:border-color .15s ease, transform .08s ease;
+  }
+  .chip:active{transform:scale(.96);}
+  .chip .ic{display:block; font-size:24px; margin-bottom:4px;}
+  .chip.sel{border-color:var(--green); background:#E3EEDF;}
+  @media (prefers-color-scheme: dark){ .chip.sel{ background:#2E3B2F; } }
+
+  .bank-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px dashed #E3DDC4;}
+  .bank-row:last-child{border-bottom:none;}
+  .bank-row .v{font-weight:900; color:var(--green-dark);}
+
+  .upload-zone{
+    border:3px dashed var(--green-light); border-radius:18px;
+    padding:30px 16px; text-align:center; margin:18px 0;
+    background:#F5F7EF;
+  }
+  .upload-zone img{max-width:100%; border-radius:12px; margin-top:10px;}
+
+  .back-link{display:inline-flex; align-items:center; gap:6px; color:var(--green-dark); font-weight:800; margin-bottom:14px; background:none; border:none; font-size:15px; padding:6px 0;}
+
+  .confetti-wrap{ position:relative; width:90px; height:90px; margin:10px auto 18px; }
+  .confirm-check{
+    width:90px;height:90px;border-radius:50%;background:var(--green);
+    display:flex; align-items:center; justify-content:center;
+    font-size:46px; color:white; animation:pop .4s ease; position:relative; z-index:2;
+  }
+  @keyframes pop{0%{transform:scale(0);} 70%{transform:scale(1.15);} 100%{transform:scale(1);}}
+  .confetti-piece{ position:absolute; width:8px; height:8px; border-radius:2px; left:50%; top:50%; animation:confetti-burst .8s ease-out forwards; z-index:1; }
+  @keyframes confetti-burst{ to { transform: translate(var(--dx), var(--dy)) rotate(360deg); opacity:0; } }
+
+  .next-steps{background:var(--cream-dark); border-radius:14px; padding:16px; text-align:left; margin-top:16px;}
+  .next-steps .step{display:flex; gap:10px; align-items:flex-start; margin-bottom:10px; font-size:14px;}
+  .next-steps .step:last-child{margin-bottom:0;}
+  .next-steps .num{background:var(--green); color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:900; flex-shrink:0;}
+
+  .floating-help{
+    position:fixed; bottom:0; left:0; right:0;
+    display:flex; justify-content:center; gap:10px; padding:14px; background:linear-gradient(0deg, var(--page-bg-bottom) 60%, transparent);
+  }
+  .floating-help a{
+    display:flex; align-items:center; gap:8px;
+    font-weight:800;
+    padding:14px 20px; border-radius:999px; box-shadow:0 6px 20px rgba(0,0,0,.15);
+    text-decoration:none; font-size:14px;
+  }
+  .floating-help .fh-wa{background:var(--whatsapp); color:white;}
+  .floating-help .fh-call{background:var(--card-bg); color:var(--green-dark); border:2px solid var(--green);}
+
+  .copy-chip{font-size:13px; font-weight:800; color:var(--green); background:#E3EEDF; padding:4px 10px; border-radius:999px; border:none;}
+  @media (prefers-color-scheme: dark){ .copy-chip{ background:#2E3B2F; } }
+  .not-found{text-align:center; padding:60px 20px;}
+  .note-box{background:#FBEDD2; border-radius:14px; padding:14px; font-size:14px; margin-top:14px; color:#6b4f14;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero"><div class="hero-caption">🌱 Directo del Maule</div></div>
+  <div class="header">
+    <img class="badge-logo" src="assets/logo-badge.jpg" alt="Del Campo a tu Mesa Maule">
+    <h1>Del Campo a tu Mesa Maule</h1>
+    <div class="tag">Directo del campo a tu puerta</div>
+  </div>
+  <div class="progress" id="progressDots">
+    <div class="dot active"></div><div class="dot"></div>
+  </div>
+  <div id="app"></div>
+</div>
+
+<div class="floating-help">
+  <a class="fh-wa" id="whatsappHelp" href="#" target="_blank">💬 Escríbenos</a>
+  <a class="fh-call" id="callHelp" href="#">📞 Llamar</a>
+</div>
+
+<script src="helpers.js"></script>
+<script>
+// Página 100% pública y estática: no requiere cuenta ni base de datos.
+// Todos los datos del pedido viajan en el link mismo, codificados en un solo
+// código corto y opaco (parámetro "o") para que no se vean datos personales
+// a la vista ni el link se vea largo y sospechoso. Se mantiene compatibilidad
+// con el formato anterior (parámetros sueltos) por si quedó algún link viejo.
+const params = new URLSearchParams(location.search);
+const datosCodificados = params.get('o') ? decodePedidoParam(params.get('o')) : null;
+const pedido = datosCodificados ? {
+  id: datosCodificados.i || '',
+  nombre: datosCodificados.n || 'cliente',
+  telefono: datosCodificados.t || '',
+  kilos: Number(datosCodificados.k || 0),
+  precioKg: Number(datosCodificados.p || 0),
+  direccion: datosCodificados.d || '',
+  comuna: datosCodificados.c || '',
+  fechaEntrega: datosCodificados.e || ''
+} : {
+  id: params.get('pid') || '',
+  nombre: params.get('nombre') || 'cliente',
+  telefono: params.get('telefono') || '',
+  kilos: Number(params.get('kilos') || 0),
+  precioKg: Number(params.get('precio') || 0),
+  direccion: params.get('direccion') || '',
+  comuna: params.get('comuna') || '',
+  fechaEntrega: params.get('entrega') || ''
+};
+const hayPedido = pedido.id && pedido.kilos > 0;
+const total = pedido.kilos * pedido.precioKg;
+const primerNombre = pedido.nombre.split(' ')[0];
+const refCorta = pedido.id ? pedido.id.replace(/^ped_/, '').slice(-6).toUpperCase() : '';
+
+document.getElementById('whatsappHelp').href = waLink(WHATSAPP_NUMERO, 'Hola, tengo una duda con mi pedido 🙂' + (refCorta ? ' (ref. '+refCorta+')' : ''));
+document.getElementById('callHelp').href = 'tel:+' + WHATSAPP_NUMERO;
+
+function vibrar(ms){ if (navigator.vibrate) { try{ navigator.vibrate(ms); }catch(e){} } }
+
+function lanzarConfetti(container){
+  const colores = ['#D6A145','#632F5D','#424973','#6B8F5C','#3F6B46'];
+  for (let i=0;i<18;i++){
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    const angle = Math.random()*360;
+    const dist = 55+Math.random()*55;
+    p.style.setProperty('--dx', Math.cos(angle*Math.PI/180)*dist+'px');
+    p.style.setProperty('--dy', Math.sin(angle*Math.PI/180)*dist+'px');
+    p.style.background = colores[i%colores.length];
+    container.appendChild(p);
+    setTimeout(()=>p.remove(), 850);
+  }
+}
+
+const BANK_INFO = {
+  banco: 'Banco Estado',
+  tipo: 'Cuenta RUT',
+  titular: 'Del Campo a tu Mesa Maule SpA',
+  rut: '11.111.111-1',
+  numero: '11111111111',
+  email: 'pagos@delcampoatumesamaule.cl'
+};
+
+let screen = 'inicio';
+let horario = null; // 'manana' | 'tarde' | 'cualquiera'
+let metodoElegido = null;
+
+function setProgress(step){
+  document.getElementById('progressDots').innerHTML =
+    `<div class="dot ${step>=1?'active':''}"></div><div class="dot ${step>=2?'active':''}"></div>`;
+}
+
+function horarioTexto(){
+  if (horario === 'manana') return 'en la mañana';
+  if (horario === 'tarde') return 'en la tarde';
+  if (horario === 'cualquiera') return 'a cualquier hora';
+  return null;
+}
+
+function mensajeConfirmacion(metodo){
+  const h = horarioTexto();
+  const lineas = ['🌱 CONFIRMACIÓN DE PEDIDO', ''];
+  lineas.push(`Nombre: ${pedido.nombre}`);
+  if (pedido.telefono) lineas.push(`Teléfono: ${pedido.telefono}`);
+  lineas.push(`Dirección: ${pedido.direccion}${pedido.comuna ? ', '+pedido.comuna : ''}`);
+  lineas.push(`Kilos: ${pedido.kilos} kg`);
+  lineas.push(`Precio por kilo: ${fmtCLP(pedido.precioKg)}`);
+  lineas.push(`Total: ${fmtCLP(total)}`);
+  if (pedido.fechaEntrega) lineas.push(`Entrega: ${fmtFechaLarga(pedido.fechaEntrega)}${h ? ' — '+h : ''}`);
+  else if (h) lineas.push(`Horario preferido: ${h}`);
+  lineas.push(`Pago: ${metodo === 'entrega' ? 'Pago a la entrega (efectivo/débito)' : 'Transferencia — comprobante adjunto en este chat 📎'}`);
+  if (refCorta) lineas.push(`Ref: ${refCorta}`);
+  return lineas.join('\n');
+}
+
+function chipRow(){
+  const fecha = pedido.fechaEntrega ? fmtFechaLarga(pedido.fechaEntrega) : null;
+  return `
+    <p style="font-weight:800; margin:18px 0 4px;">📅 ${fecha ? `Te entregamos el <span style="color:var(--green-dark)">${fecha}</span>` : 'Tu fecha de entrega la confirma la empresa'}</p>
+    <p class="muted" style="margin-bottom:6px;">¿Qué horario te acomoda más ese día? Así te avisamos por WhatsApp justo antes de llegar — opcional, pero ayuda mucho.</p>
+    <div class="chip-row">
+      <div class="chip ${horario==='manana'?'sel':''}" data-horario="manana"><span class="ic">🌅</span>Mañana</div>
+      <div class="chip ${horario==='tarde'?'sel':''}" data-horario="tarde"><span class="ic">🌇</span>Tarde</div>
+      <div class="chip ${horario==='cualquiera'?'sel':''}" data-horario="cualquiera"><span class="ic">🤷</span>Cualquier hora</div>
+    </div>`;
+}
+
+function bindChips(){
+  document.querySelectorAll('[data-horario]').forEach(el => {
+    el.addEventListener('click', () => { vibrar(10); horario = el.dataset.horario; render(); });
+  });
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if (!hayPedido){
+    app.innerHTML = `<div class="card not-found"><h3>No encontramos los datos de tu pedido</h3><p class="muted">Pide a quien te envió el link que lo revise, o escríbenos por WhatsApp.</p></div>`;
+    return;
+  }
+
+  if (screen === 'inicio'){
+    setProgress(1);
+    app.innerHTML = `
+      ${refCorta ? `<div class="ref-tag">Pedido #${refCorta}</div>` : ''}
+      <div class="card">
+        <h2>¡Hola, ${primerNombre}! 👋</h2>
+        <p>Este es el resumen de tu pedido de espárragos frescos del Maule:</p>
+        <div class="big-total">
+          <div class="amount">${fmtCLP(total)}</div>
+          <div class="kg">${pedido.kilos} kg · ${fmtCLP(pedido.precioKg)} por kilo</div>
+        </div>
+        ${(pedido.direccion || pedido.fechaEntrega) ? `<div class="ticket-sep"></div>` : ''}
+        ${pedido.fechaEntrega ? `<div class="summary-row"><span class="ic">📅</span><span class="lbl">Te lo entregamos</span><span class="val">${fmtFechaLarga(pedido.fechaEntrega)}</span></div>` : ''}
+        ${pedido.direccion ? `<div class="summary-row"><span class="ic">📍</span><span class="lbl">Entrega en</span><span class="val">${pedido.direccion}${pedido.comuna ? ', '+pedido.comuna : ''}</span></div>` : ''}
+      </div>
+
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <div class="quote">"Un 7 Maravillosos"</div>
+        <div class="muted">— María Fernanda, clienta en Quilpué</div>
+      </div>
+
+      <h3 style="margin:22px 0 12px;">¿Cómo quieres pagar?</h3>
+      <button class="choice-btn" id="btnEntrega">
+        <span class="ic">💵</span>
+        <span>Pago a la entrega<small>Pagas en efectivo o débito cuando te traigamos el pedido</small></span>
+      </button>
+      <button class="choice-btn" id="btnTransferencia">
+        <span class="ic">🏦</span>
+        <span>Transferencia bancaria<small>Te mostramos los datos y nos envías tu comprobante por WhatsApp</small></span>
+      </button>
+    `;
+    document.getElementById('btnEntrega').addEventListener('click', () => { vibrar(15); metodoElegido='entrega'; screen='horario'; render(); });
+    document.getElementById('btnTransferencia').addEventListener('click', () => { vibrar(15); metodoElegido='transferencia'; screen='horario'; render(); });
+  }
+
+  else if (screen === 'horario'){
+    setProgress(2);
+    app.innerHTML = `
+      <button class="back-link" id="btnBack">← Volver</button>
+      <div class="card">
+        <h2>Casi listo</h2>
+        ${chipRow()}
+        <button class="btn btn-block" id="btnSiguiente" style="margin-top:18px;">Continuar</button>
+      </div>`;
+    document.getElementById('btnBack').addEventListener('click', () => { screen='inicio'; render(); });
+    bindChips();
+    document.getElementById('btnSiguiente').addEventListener('click', () => { vibrar(15); screen = metodoElegido; render(); });
+  }
+
+  else if (screen === 'entrega'){
+    setProgress(2);
+    app.innerHTML = `
+      <button class="back-link" id="btnBack">← Volver</button>
+      <div class="card">
+        <h2>Confirmar pago a la entrega</h2>
+        <div class="big-total">
+          <div class="amount">${fmtCLP(total)}</div>
+          <div class="kg">${pedido.kilos} kg</div>
+        </div>
+        <p>Pagarás en efectivo o débito cuando recibas tu pedido${pedido.direccion ? ' en <strong>'+pedido.direccion+'</strong>' : ''}.</p>
+        <a class="btn btn-block" id="btnConfirmarEntrega" target="_blank" style="margin-top:10px; text-decoration:none;" href="${waLink(WHATSAPP_NUMERO, mensajeConfirmacion('entrega'))}">Confirmar por WhatsApp</a>
+      </div>
+    `;
+    document.getElementById('btnBack').addEventListener('click', () => { screen='horario'; render(); });
+    document.getElementById('btnConfirmarEntrega').addEventListener('click', () => { vibrar(20); screen='confirmado'; setTimeout(render, 400); });
+  }
+
+  else if (screen === 'transferencia'){
+    setProgress(2);
+    app.innerHTML = `
+      <button class="back-link" id="btnBack">← Volver</button>
+      <div class="card">
+        <h2>Datos para transferir</h2>
+        <div class="big-total" style="padding:10px 0;">
+          <div class="amount">${fmtCLP(total)}</div>
+        </div>
+        <div class="bank-row"><span>Banco</span><span class="v">${BANK_INFO.banco}</span></div>
+        <div class="bank-row"><span>Tipo de cuenta</span><span class="v">${BANK_INFO.tipo}</span></div>
+        <div class="bank-row"><span>Titular</span><span class="v">${BANK_INFO.titular}</span></div>
+        <div class="bank-row"><span>RUT</span><span class="v">${BANK_INFO.rut}</span></div>
+        <div class="bank-row"><span>N° cuenta</span><span class="v">${BANK_INFO.numero}</span></div>
+        <div class="bank-row"><span>Email</span><span class="v">${BANK_INFO.email}</span></div>
+        <button class="copy-chip" id="btnCopiarDatos" style="margin-top:14px;">📋 Copiar todos los datos</button>
+        <span class="copy-ok" id="copyBankOk" style="display:none; margin-left:8px;">¡Copiado!</span>
+      </div>
+
+      <div class="upload-zone" id="uploadZone">
+        <div style="font-size:40px;">📷</div>
+        <p style="font-weight:800; margin:8px 0 4px;">Saca una foto a tu comprobante</p>
+        <p class="muted">La usaremos solo para que no se te olvide adjuntarla</p>
+        <input type="file" accept="image/*" capture="environment" id="fileInput" style="display:none;">
+        <div id="previewBox"></div>
+      </div>
+
+      <div class="note-box">📎 Al tocar "Enviar por WhatsApp" se abrirá tu chat con nosotros. Solo adjunta ahí la foto que acabas de sacar (aparecerá como la más reciente en tu galería) y presiona enviar.</div>
+
+      <a class="btn btn-block" id="btnEnviarComprobante" target="_blank" style="margin-top:16px; text-decoration:none;" href="${waLink(WHATSAPP_NUMERO, mensajeConfirmacion('transferencia'))}">Enviar por WhatsApp</a>
+    `;
+    document.getElementById('btnBack').addEventListener('click', () => { screen='horario'; render(); });
+    document.getElementById('btnCopiarDatos').addEventListener('click', () => {
+      const txt = `Banco: ${BANK_INFO.banco}\nTipo de cuenta: ${BANK_INFO.tipo}\nTitular: ${BANK_INFO.titular}\nRUT: ${BANK_INFO.rut}\nN° cuenta: ${BANK_INFO.numero}\nEmail: ${BANK_INFO.email}`;
+      navigator.clipboard.writeText(txt).then(()=>{
+        const el = document.getElementById('copyBankOk');
+        el.style.display='inline'; setTimeout(()=>el.style.display='none', 1500);
+      });
+    });
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    uploadZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => { document.getElementById('previewBox').innerHTML = `<img src="${e.target.result}" alt="Vista previa del comprobante">`; };
+      reader.readAsDataURL(file);
+    });
+    document.getElementById('btnEnviarComprobante').addEventListener('click', () => { vibrar(20); screen='confirmado'; setTimeout(render, 400); });
+  }
+
+  else if (screen === 'confirmado'){
+    setProgress(2);
+    app.innerHTML = `
+      <div class="card" style="text-align:center;">
+        <div class="confetti-wrap" id="confettiWrap"><div class="confirm-check">✓</div></div>
+        <h2>¡Listo, gracias ${primerNombre}!</h2>
+        <p>Tu pedido de ${pedido.kilos} kg de espárragos frescos del Maule quedó registrado.</p>
+        <div class="next-steps">
+          <div class="step"><span class="num">1</span><span>Revisamos tu confirmación en WhatsApp.</span></div>
+          <div class="step"><span class="num">2</span><span>El día de tu entrega te escribimos avisando que vamos en camino — no tienes que estar pendiente antes.</span></div>
+          <div class="step"><span class="num">3</span><span>Al recibir tu pedido, te mandamos una encuestita cortita — nos ayuda mucho tu opinión 🙏</span></div>
+        </div>
+        <a class="btn btn-whatsapp btn-block" style="margin-top:16px; text-decoration:none;" target="_blank" href="${waLink(WHATSAPP_NUMERO,'¡Hola de nuevo!')}">Volver a WhatsApp</a>
+      </div>
+    `;
+    const cw = document.getElementById('confettiWrap');
+    if (cw) lanzarConfetti(cw);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
