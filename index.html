@@ -344,7 +344,11 @@ function renderNuevoPedido(){
 
 function bindNuevoPedido(){
   document.querySelectorAll('[data-np-kilos]').forEach(el => {
-    el.addEventListener('click', () => { vibrar(10); npKilos = Number(el.dataset.npKilos); render(); });
+    el.addEventListener('click', () => {
+      vibrar(10);
+      npKilos = Number(el.dataset.npKilos);
+      document.querySelectorAll('[data-np-kilos]').forEach(c => c.classList.toggle('sel', c === el));
+    });
   });
   const btn = document.getElementById('btnEnviarNuevoPedido');
   if (btn) btn.addEventListener('click', () => {
