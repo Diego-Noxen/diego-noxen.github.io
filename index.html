@@ -120,6 +120,13 @@
   .bank-row:last-child{border-bottom:none;}
   .bank-row .v{font-weight:900; color:var(--green-dark);}
 
+  .tarifa-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:14px 0;}
+  .tarifa-item{text-align:center; background:var(--cream-dark); border-radius:12px; padding:10px 4px;}
+  .tarifa-item strong{display:block; color:var(--green-dark); font-size:15px;}
+  .tarifa-item span{font-size:12px; color:#7a8a7c; font-weight:700;}
+  @media (max-width:360px){ .tarifa-grid{grid-template-columns:repeat(2,1fr);} }
+  .chip.small{padding:12px 8px; font-size:13px; min-width:0;}
+
   .upload-zone{
     border:3px dashed var(--green-light); border-radius:18px;
     padding:30px 16px; text-align:center; margin:18px 0;
@@ -294,10 +301,79 @@ function bindChips(){
   });
 }
 
+// ---- Pedido nuevo (cuando el link no trae un pedido específico, ej. saludo de WhatsApp) ----
+const TARIFAS = [ {kg:1, precio:3900}, {kg:2, precio:7800}, {kg:3, precio:11700}, {kg:5, precio:19500} ];
+let npKilos = null;
+let npEnviado = false;
+
+function renderNuevoPedido(){
+  if (npEnviado){
+    return `
+    <div class="card" style="text-align:center;">
+      <div class="confetti-wrap" id="confettiWrap"><div class="confirm-check">✓</div></div>
+      <h2>¡Listo, gracias!</h2>
+      <p>Tu pedido quedó enviado por WhatsApp. En cuanto lo veamos te confirmamos los detalles y cómo pagar.</p>
+      <a class="btn btn-whatsapp btn-block" style="margin-top:16px; text-decoration:none;" target="_blank" href="${waLink(WHATSAPP_NUMERO,'¡Hola de nuevo!')}">Volver a WhatsApp</a>
+    </div>`;
+  }
+  return `
+    <div class="card">
+      <h2>¡Hola! 👋</h2>
+      <p>Espárragos frescos, cosechados directo del Maule. Estos son nuestros precios:</p>
+      <div class="tarifa-grid">
+        ${TARIFAS.map(t => `<div class="tarifa-item"><strong>${t.kg} kg</strong><span>${fmtCLP(t.precio)}</span></div>`).join('')}
+      </div>
+      <p class="muted">🚐 Despacho gratis en nuestra ruta (Parral–Talca–Curicó–Rancagua–Santiago–Casablanca–Quilpué). Fuera de ruta: +$5.000.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Arma tu pedido</h3>
+      <div class="field"><label>Tu nombre</label><input id="npNombre" type="text" placeholder="Nombre y apellido"></div>
+      <div class="field"><label>Dirección</label><input id="npDireccion" type="text" placeholder="Calle y número"></div>
+      <div class="field"><label>Comuna</label><input id="npComuna" type="text" placeholder="Ej: Quilpué"></div>
+      <div class="field">
+        <label>¿Cuántos kilos quieres?</label>
+        <div class="chip-row">
+          ${TARIFAS.map(t => `<div class="chip small ${npKilos===t.kg?'sel':''}" data-np-kilos="${t.kg}">${t.kg} kg</div>`).join('')}
+        </div>
+      </div>
+      <button class="btn btn-block" id="btnEnviarNuevoPedido" style="margin-top:14px;">Enviar pedido por WhatsApp</button>
+      <p class="muted" style="margin-top:10px; text-align:center;">¿Prefieres que te ayudemos directo? Escríbenos abajo y te atendemos personalmente 😊</p>
+    </div>`;
+}
+
+function bindNuevoPedido(){
+  document.querySelectorAll('[data-np-kilos]').forEach(el => {
+    el.addEventListener('click', () => { vibrar(10); npKilos = Number(el.dataset.npKilos); render(); });
+  });
+  const btn = document.getElementById('btnEnviarNuevoPedido');
+  if (btn) btn.addEventListener('click', () => {
+    const nombre = document.getElementById('npNombre').value.trim();
+    const direccion = document.getElementById('npDireccion').value.trim();
+    const comuna = document.getElementById('npComuna').value.trim();
+    if (!nombre || !npKilos){
+      alert('Por favor cuéntanos tu nombre y cuántos kilos quieres.');
+      return;
+    }
+    vibrar(20);
+    const tarifa = TARIFAS.find(t=>t.kg===npKilos);
+    const lineas = ['🌱 QUIERO HACER UN PEDIDO', '', `Nombre: ${nombre}`];
+    if (direccion) lineas.push(`Dirección: ${direccion}${comuna ? ', '+comuna : ''}`);
+    lineas.push(`Kilos: ${npKilos} kg (aprox. ${fmtCLP(tarifa.precio)})`);
+    window.open(waLink(WHATSAPP_NUMERO, lineas.join('\n')), '_blank');
+    npEnviado = true;
+    render();
+    const cw = document.getElementById('confettiWrap');
+    if (cw) lanzarConfetti(cw);
+  });
+}
+
 function render(){
   const app = document.getElementById('app');
   if (!hayPedido){
-    app.innerHTML = `<div class="card not-found"><h3>No encontramos los datos de tu pedido</h3><p class="muted">Pide a quien te envió el link que lo revise, o escríbenos por WhatsApp.</p></div>`;
+    setProgress(0);
+    app.innerHTML = renderNuevoPedido();
+    bindNuevoPedido();
     return;
   }
 
